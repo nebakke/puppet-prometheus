@@ -14,22 +14,25 @@
 #  Directory used for collecting scrape definitions.
 #  NOTE: this is a prometheus setting and will be overridden during collection.
 define prometheus::scrape_job (
-  String[1] $job_name,
+  String[1] $job_name = $name,
   Array[String[1]] $targets,
   Hash[String[1], String[1]] $labels = {},
-  Stdlib::Absolutepath $collect_dir  = undef,
+  Stdlib::Absolutepath $collect_dir  = "${prometheus::config_dir}/file_sd_config.d",
 ) {
-  $config = stdlib::to_yaml([
-      {
-        targets => $targets,
-        labels  => $labels,
-      },
-  ])
-  file { "${collect_dir}/${job_name}_${name}.yaml":
-    ensure  => file,
-    owner   => 'root',
-    group   => $prometheus::group,
-    mode    => $prometheus::config_mode,
-    content => "# this file is managed by puppet; changes will be overwritten\n${config}",
-  }
+  #  $config = stdlib::to_yaml([
+  #      {
+  #        targets => $targets,
+  #        labels  => $labels,
+  #      },
+  #  ])
+
+  $job_file = $job_name ? { $name => $name, default => "${job_name}_${name}.yaml" }
+
+  #  file { "${collect_dir}/${job_file}":
+  #    ensure  => file,
+  #    owner   => 'root',
+  #    group   => $prometheus::group,
+  #    mode    => $prometheus::config_mode,
+  #    content => "# this file is managed by puppet; changes will be overwritten\n${config}",
+  #  }
 }
